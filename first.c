@@ -5,15 +5,15 @@
 #include <math.h>
 
 int low_chars[26];
-int upp_chars[26] 
+int upp_chars[26];
 
-const char circ_types[5] = [
+const char *circ_types[5] = {
 	"NOT",
 	"AND",
 	"OR",
 	"DECODER",
 	"MULTIPLEXER"
-	]
+	};
 
 // sets the varialbes at a given char
 void set_variable(char a, int i){
@@ -22,7 +22,7 @@ void set_variable(char a, int i){
 	else{
 		printf("Not a valid character. Variable must be an uppercase or lowercase char\n");
 	}
-	return
+	return;
 }
 
 // returns the variable at a given char
@@ -33,7 +33,7 @@ int get_variable(char a){
 	else if(a == '0') return 0;
 	else{
 		printf("Not a recognized variable\n");
-		return (-1)
+		return (-1);
 	}
 }
 
@@ -62,24 +62,23 @@ unsigned int grayToBinary(unsigned int num)
     return num;
 }
 
-// takes in the input variable string and a set of values, and adds them
+// takes in the input variable string and a set of values, and adds them to the data struct
 void read_input(char* input_string, char* input_values){
 	int  i;
-	char *token;
-	char input_variables[50];
+	char *token, input_variables[50];
 
 	const char s[2] = " ";
 	strtok(input_string, s);
     int count = atoi(strtok(NULL, s));
-	for(i = 0; i < count, i++){
+	for(i = 0; i < count; i++){
        	token = strtok(NULL, s);
 		printf( " %s\n", token );
-		output_variables[i] = *token;
+		input_variables[i] = *token;
 	}
 
 	for (i = 0; i < count; i++){
 		token = strtok(input_values, s);
-		set_variable(output_variables[i], atoi(token));
+		set_variable(input_variables[i], atoi(token));
 	}
 	return;
 }
@@ -88,12 +87,12 @@ void read_input(char* input_string, char* input_values){
 char* read_output(char* output_string){
 	int  i;
 	char *token;
-	char output_variables[50];
+	char *output_variables = malloc(50);
 
 	const char s[2] = " ";
     strtok(output_string, s);
     int count = atoi(strtok(NULL, s));
-	for(i = 0; i < count, i++){
+	for(i = 0; i < count; i++){
        	token = strtok(NULL, s);
 		printf( " %s\n", token );
 		output_variables[i] = *token;
@@ -105,8 +104,9 @@ char* read_output(char* output_string){
 int ciruit_type(char* name){
 	int i;
 	for (i = 0; i < 5; i++){
-		if(strcmp(name,circ_types[i] == 0) return i;
+		if(strcmp(name,circ_types[i]) == 0) return i;
 	}
+	return -1;
 }
 
 // Attempts to run the not circuit. Returns 0 if an input variable has not been given yet, and 1 on sucess
@@ -148,7 +148,7 @@ int or(char* circuit_string){
     if( in1_val == -1  || in2_val == -1) return 0;
     if( in1_val == 1 || in2_val == 1) set_variable(out, 1);
     else set_variable(out, 0);
-    return 1
+    return 1;
 }
 
 int decoder(char* circuit_string){
@@ -158,18 +158,18 @@ int decoder(char* circuit_string){
 	const char s[2] = " ";
 
     strtok(circuit_string, s);
-    count = itoa(strtok(NULL, s));
-    for(i = 0; i <count, i++){
+    count = atoi(strtok(NULL, s));
+    for(i = 0; i <count; i++){
     	inval[i] = get_variable(*strtok(NULL,s));
     	if(inval[i] == -1) return 0;
     }
     for(i = 0; i < 1<<(count); i++){
     	ctemp = *strtok(NULL,s);
     	out[i] = ctemp;
-    	set_variable(ctemp, 0)
+    	set_variable(ctemp, 0);
     }
-    for(i = 0; i <count, i++){
-    	if(inval[i]) gray += pow(2,i);
+    for(i = 0; i <count; i++){
+    	if(inval[i]) gray += 1 <<i;
     }
     set_variable(out[grayToBinary(gray)], 1);
     return 1;
@@ -183,31 +183,31 @@ int multiplexer(char* circuit_string){
 	const char s[2] = " ";
 
     strtok(circuit_string, s);
-    count = itoa(strtok(NULL, s));
-    for(i = 0; i 1<<(count), i++){
+    count = atoi(strtok(NULL, s));
+    for(i = 0; i < 1<<(count); i++){
     	inval[i] = get_variable(*strtok(NULL,s));
     	if(inval[i] == -1) return 0;
     }
     while(count != 1){
     	switch_num++;
-    	count>>1;
+    	count>>=1;
     }
     for(i = 0; i < switch_num; i++){
-    	inswitch[i] = get_variable(*strtok(NULL, s))
+    	inswitch[i] = get_variable(*strtok(NULL, s));
     	if(inswitch[i] == -1) return 0;
     }
-    for(i = 0; i <switch_num, i++){
-    	if(inswitch[i]) gray += pow(2,i);
+    for(i = 0; i <switch_num; i++){
+    	if(inswitch[i]) gray += 1<<i;
     }
     out = *strtok(NULL, s);
     set_variable(out, inval[gray]);
     return 1;
 }
 
-int use_circuit(char* circuit_string){
+int use_circuit_piece(char* circuit_string){
 	const char s[2] = " ";
  	char* token = strtok(circuit_string, s);
-	int type = circuit_type(token);
+	int type = ciruit_type(token);
 	int succ;
 	switch(type) {
 		case 0:
@@ -234,11 +234,10 @@ int use_circuit(char* circuit_string){
 }
 
 //Takes in the file containing a circuit and returns a null terminated list of the ciruit pieces
-void run_circuit(FILE* ciruit_file, FILE* input_file){
-	char circuit_buffer[2000];
-	char input_buffer[2000];
-	char* output variables;
-	int ivar_count;
+void run_circuit(FILE* circuit_file, FILE* input_file){
+	char circuit_buffer[2000], input_buffer[2000];
+	char *output_variables, *circuit_set[100];
+	int count = 0;
 
 	while(fgets(input_buffer, 2000, input_file) != NULL){
 		initialize_var_array();
@@ -249,22 +248,26 @@ void run_circuit(FILE* ciruit_file, FILE* input_file){
 		output_variables = read_output(circuit_buffer);
 
 		while(fgets(circuit_buffer, 2000, circuit_file) != NULL ) {
-			if (!use ciruit(circuit_buffer)){	
-				char* new = malloc(strlen(buffer));
-				strcpy(new,circuit_buffer);
+			//TODO consider a linked list?
+			if (!use_circuit_piece(circuit_buffer)){	
+				char* new = malloc(strlen(circuit_buffer) + 1);
+				strcpy(new, circuit_buffer);
 				circuit_set[count] = new;
-				count++
+				count++;
 			}
 	  	}
+	  	//loop through the remainder.
 	}
+	return;
 }
 
 FILE* safe_fopen(char* file_name){
-	FILE* new = fopen(file_name, 'r');
-	if(!circuit_file){
+	FILE* new = fopen(file_name, "r");
+	if(!new){
 		printf("%s could not be opened\n", file_name);
 		exit(0);
 	}
+	return new;
 }
 
 int mains(int argc, char** argv){
@@ -280,5 +283,13 @@ int mains(int argc, char** argv){
 }
 
 int main(){
-
+	initialize_var_array();
+	set_variable('1', 1);
+	set_variable('a', 1);
+	set_variable('B', 0);
+	printf("%d\n", get_variable('a')); 
+	printf("%d\n", get_variable('B')); 
+	printf("%d\n", get_variable('1'));
+	get_variable('9');  
+	return 0;
 }
