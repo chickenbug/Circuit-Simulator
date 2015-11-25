@@ -33,7 +33,7 @@ int get_variable(char a){
 	else if(a == '0') return 0;
 	else{
 		printf("Not a recognized variable\n");
-		return (-1);
+		return -1;
 	}
 }
 
@@ -47,16 +47,13 @@ void initialize_var_array(){
 	return;
 }
 
-unsigned int binaryToGray(unsigned int num)
-{
+unsigned int binaryToGray(unsigned int num){
     return num ^ (num >> 1);
 }
 
-unsigned int grayToBinary(unsigned int num)
-{
+unsigned int grayToBinary(unsigned int num){
     unsigned int mask;
-    for (mask = num >> 1; mask != 0; mask = mask >> 1)
-    {
+    for (mask = num >> 1; mask != 0; mask = mask >> 1){
         num = num ^ mask;
     }
     return num;
@@ -169,7 +166,7 @@ int decoder(char* circuit_string){
     	set_variable(ctemp, 0);
     }
     for(i = 0; i <count; i++){
-    	if(inval[i]) gray += 1 <<i;
+    	if(inval[i]) gray += 1<<(count - 1 - i);
     }
     set_variable(out[grayToBinary(gray)], 1);
     return 1;
@@ -197,7 +194,7 @@ int multiplexer(char* circuit_string){
     	if(inswitch[i] == -1) return 0;
     }
     for(i = 0; i <switch_num; i++){
-    	if(inswitch[i]) gray += 1<<i;
+    	if(inswitch[i]) gray += 1<<(count - 1 - i);
     }
     out = *strtok(NULL, s);
     set_variable(out, inval[gray]);
@@ -283,13 +280,17 @@ int mains(int argc, char** argv){
 }
 
 int main(){
+	char *buffer = malloc(1000);
+	strcpy(buffer, "DECODER 2 A B P Q R S");
+	printf("%s\n", buffer);
 	initialize_var_array();
-	set_variable('1', 1);
-	set_variable('a', 1);
+	set_variable('A', 1);
 	set_variable('B', 0);
-	printf("%d\n", get_variable('a')); 
-	printf("%d\n", get_variable('B')); 
-	printf("%d\n", get_variable('1'));
-	get_variable('9');  
+	printf("a: %d b: %d\n", get_variable('A'), get_variable('B'));
+	decoder(buffer);
+	printf("P: %d\n", get_variable('P'));	
+	printf("Q: %d\n", get_variable('Q'));
+	printf("R: %d\n", get_variable('R'));
+	printf("S: %d\n", get_variable('S'));
 	return 0;
 }
