@@ -69,12 +69,13 @@ void read_input(char* input_string, char* input_values){
     int count = atoi(strtok(NULL, s));
 	for(i = 0; i < count; i++){
        	token = strtok(NULL, s);
-		printf( " %s\n", token );
 		input_variables[i] = *token;
 	}
-
-	for (i = 0; i < count; i++){
-		token = strtok(input_values, s);
+	// not the best way to do this, but it'll do
+	token = strtok(input_values, s);
+	set_variable(input_variables[0], atoi(token));
+	for (i = 1; i < count; i++){
+		token = strtok(NULL, s);
 		set_variable(input_variables[i], atoi(token));
 	}
 	return;
@@ -94,6 +95,7 @@ char* read_output(char* output_string){
 		printf( " %s\n", token );
 		output_variables[i] = *token;
 	}
+	output_variables[i] = '\0';
 	return output_variables;
 }
 
@@ -233,7 +235,7 @@ int use_circuit_piece(char* circuit_string){
 //Takes in the file containing a circuit and returns a null terminated list of the ciruit pieces
 void run_circuit(FILE* circuit_file, FILE* input_file){
 	char circuit_buffer[2000], input_buffer[2000];
-	char *output_variables, *circuit_set[100];
+	char *output_variables, *circuit_set[100], *out_iter;
 	int count = 0;
 
 	while(fgets(input_buffer, 2000, input_file) != NULL){
@@ -252,8 +254,15 @@ void run_circuit(FILE* circuit_file, FILE* input_file){
 				circuit_set[count] = new;
 				count++;
 			}
+	    }
+	  	out_iter = output_variables;
+	  	while(*out_iter != '\0'){
+	  		printf("%d ", get_variable(*out_iter));
+	  		out_iter++;
 	  	}
-	  	//loop through the remainder.
+	  	printf("\n");
+	  	free(output_variables);
+
 	}
 	return;
 }
@@ -281,5 +290,9 @@ int mains(int argc, char** argv){
 
 int main(){
 	initialize_var_array();
+	char buffer[100], input_buffer[100];
+	strcpy(buffer, "INPUTVAR 3 A C D");
+	strcpy(input_buffer, "1 0 0");
+	read_input(buffer, input_buffer);
 	return 0;
 }
