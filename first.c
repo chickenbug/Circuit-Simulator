@@ -181,7 +181,7 @@ int multiplexer(char* circuit_string){
 
     strtok(circuit_string, s);
     count = atoi(strtok(NULL, s));
-    for(i = 0; i < 1<<(count); i++){
+    for(i = 0; i < count; i++){
     	inval[i] = get_variable(*strtok(NULL,s));
     	if(inval[i] == -1) return 0;
     }
@@ -193,11 +193,11 @@ int multiplexer(char* circuit_string){
     	inswitch[i] = get_variable(*strtok(NULL, s));
     	if(inswitch[i] == -1) return 0;
     }
-    for(i = 0; i <switch_num; i++){
-    	if(inswitch[i]) gray += 1<<(count - 1 - i);
+    for(i = 0; i < switch_num; i++){
+    	if(inswitch[i]) gray += 1<<(switch_num - 1 - i);
     }
     out = *strtok(NULL, s);
-    set_variable(out, inval[gray]);
+    set_variable(out, inval[grayToBinary(gray)]);
     return 1;
 }
 
@@ -280,17 +280,6 @@ int mains(int argc, char** argv){
 }
 
 int main(){
-	char *buffer = malloc(1000);
-	strcpy(buffer, "DECODER 2 A B P Q R S");
-	printf("%s\n", buffer);
 	initialize_var_array();
-	set_variable('A', 1);
-	set_variable('B', 0);
-	printf("a: %d b: %d\n", get_variable('A'), get_variable('B'));
-	decoder(buffer);
-	printf("P: %d\n", get_variable('P'));	
-	printf("Q: %d\n", get_variable('Q'));
-	printf("R: %d\n", get_variable('R'));
-	printf("S: %d\n", get_variable('S'));
 	return 0;
 }
